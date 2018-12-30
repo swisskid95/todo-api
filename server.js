@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const _ = require("underscore");
 
 const app = express();
 
@@ -21,7 +22,7 @@ const todos = [
   },
   {
     id: 3,
-    desccription: "Take the trash out",
+    description: "Take the trash out",
     completed: true
   }
 ];
@@ -39,13 +40,7 @@ app.get("/todos", (req, res) => {
 // Get todos:id
 app.get("/todos/:id", (req, res) => {
   const todoId = parseInt(req.params.id, 10);
-  let matchedTodo;
-
-  for (let todo of todos){
-    if (todo.id === todoId){
-      matchedTodo = todo;
-    }
-  }
+  let matchedTodo = _.findWhere(todos, {id: todoId});
 
   if(matchedTodo){
     res.json(matchedTodo);
@@ -58,10 +53,18 @@ app.get("/todos/:id", (req, res) => {
 
 // Post /todos
 app.post('/todos', (req, res) => {
-  let body = req.body;
+  let body = _.pick(req.body, "description", "completed");
 
+  // Validating 
+  if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
+    return res.status(400).send("Failed validation test")
+  }
+
+  //  Add Id to field and increment by one
   body.id = todoNextId++;
+  body.description = body.description.trim();
   
+  // Push new todo to todos
   todos.push(body);
   
   res.json(body);
