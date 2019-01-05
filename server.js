@@ -9,7 +9,7 @@ let todoNextId = 4;
 
 app.use(bodyParser.json());
 
-const todos = [
+let todos = [
   {
     id: 1,
     description: "Bath Willie's puppy",
@@ -70,6 +70,21 @@ app.post('/todos', (req, res) => {
   res.json(body);
   console.log(JSON.stringify(todos, null, 2));
 });
+
+// DELETE /todos/id
+app.delete('/todos/:id', (req, res) => {
+  const todoId = parseInt(req.params.id, 10);
+  let matchedTodo = _.find(todos, {id: todoId});
+
+  if (matchedTodo){
+    todos = _.without(todos, matchedTodo);
+    res.status(200).json(matchedTodo);
+  }else{
+    res.status(404).send({error: `todo with id: ${todoId} does not exit`})
+  }
+
+
+})
 
 app.listen(PORT, () => {
   console.log(`Express listening on port ${PORT}!`);
